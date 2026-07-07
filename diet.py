@@ -32,7 +32,16 @@ def create_diet():
 
     return jsonify ({"message": "todos os campos são obrigatórios"}), 400
 
+@app.route('/diet/<int:meal_id>', methods=['DELETE'])
+def delete_diet(meal_id):
+    meal = Diet.query.get(meal_id)
+    if meal:
+        db.session.delete(meal)
+        db.session.commit()
 
+        return jsonify({"message": "Refeição deletada com sucesso"})
+
+    return jsonify({"message": "Refeição não encontrada"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
