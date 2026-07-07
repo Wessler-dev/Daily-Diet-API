@@ -45,7 +45,20 @@ def get_diets():
             "is_on_diet": diet.is_on_diet
         })
     return jsonify(diet_list)
-    
+
+@app.route('/diet/<int:meal_id>', methods=['GET'])
+def get_diet(meal_id):
+    meal = Diet.query.get(meal_id)
+    if meal:
+        return jsonify({
+            "id": meal.id,
+            "name": meal.name,
+            "description": meal.description,
+            "meal_datetime": meal.meal_datetime.strftime("%Y-%m-%d %H:%M"),
+            "is_on_diet": meal.is_on_diet
+        })
+    return jsonify({"message": "Refeição não encontrada"}), 404
+
 @app.route('/diet/<int:meal_id>', methods=['PUT'])
 def update_diet(meal_id):
     meal = Diet.query.get(meal_id)
