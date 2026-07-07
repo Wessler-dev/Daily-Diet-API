@@ -32,6 +32,24 @@ def create_diet():
 
     return jsonify ({"message": "todos os campos são obrigatórios"}), 400
 
+@app.route('/diet/<int:meal_id>', methods=['PUT'])
+def update_diet(meal_id):
+    meal = Diet.query.get(meal_id)
+    if meal:
+        data = request.json
+        meal.name = data.get("name", meal.name)
+        meal.description = data.get("description", meal.description)
+        meal.is_on_diet = data.get("is_on_diet", meal.is_on_diet)
+        meal_datetime_str = data.get("meal_datetime")
+        if meal_datetime_str:
+            meal.meal_datetime = datetime.strptime(meal_datetime_str, "%Y-%m-%d %H:%M")
+            db.session.commit()
+
+            return jsonify({"message": f"Refeição {meal_id} atualizada com sucesso"})
+        
+        return jsonify({"message":" Refeição não encontrada"}), 404
+        
+
 @app.route('/diet/<int:meal_id>', methods=['DELETE'])
 def delete_diet(meal_id):
     meal = Diet.query.get(meal_id)
