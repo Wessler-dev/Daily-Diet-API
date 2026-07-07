@@ -32,6 +32,20 @@ def create_diet():
 
     return jsonify ({"message": "todos os campos são obrigatórios"}), 400
 
+@app.route('/diet', methods=['GET'])
+def get_diets():
+    diets = Diet.query.all()
+    diet_list = []
+    for diet in diets:
+        diet_list.append({
+            "id": diet.id,
+            "name": diet.name,
+            "description": diet.description,
+            "meal_datetime": diet.meal_datetime.strftime("%Y-%m-%d %H:%M"),
+            "is_on_diet": diet.is_on_diet
+        })
+    return jsonify(diet_list)
+    
 @app.route('/diet/<int:meal_id>', methods=['PUT'])
 def update_diet(meal_id):
     meal = Diet.query.get(meal_id)
