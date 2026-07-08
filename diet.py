@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from flask import Flask
 from flask import Flask, request, jsonify
 from database import db
 from models.meal import Diet
@@ -34,7 +34,7 @@ def create_diet():
 
 @app.route('/diet', methods=['GET'])
 def get_diets():
-    diets = Diet.query.all()
+    diets = db.session.query(Diet).all()
     diet_list = []
     for diet in diets:
         diet_list.append({
@@ -48,20 +48,23 @@ def get_diets():
 
 @app.route('/diet/<int:meal_id>', methods=['GET'])
 def get_diet(meal_id):
-    meal = Diet.query.get(meal_id)
+    meal = db.session.get(Diet, meal_id)
     if meal:
+        status = "está na dieta" if meal.is_on_diet else "não está na dieta"
+
         return jsonify({
             "id": meal.id,
             "name": meal.name,
             "description": meal.description,
             "meal_datetime": meal.meal_datetime.strftime("%Y-%m-%d %H:%M"),
-            "is_on_diet": meal.is_on_diet
+            "is_on_diet": meal.is_on_diet,
+            "message": f"A refeição {meal.name} {status}"
         })
     return jsonify({"message": "Refeição não encontrada"}), 404
 
 @app.route('/diet/<int:meal_id>', methods=['PUT'])
 def update_diet(meal_id):
-    meal = Diet.query.get(meal_id)
+    meal = db.session.get(Diet, meal_id)
     if meal:
         data = request.json
         meal.name = data.get("name", meal.name)
@@ -70,16 +73,16 @@ def update_diet(meal_id):
         meal_datetime_str = data.get("meal_datetime")
         if meal_datetime_str:
             meal.meal_datetime = datetime.strptime(meal_datetime_str, "%Y-%m-%d %H:%M")
-            db.session.commit()
+        db.session.commit()
 
-            return jsonify({"message": f"Refeição {meal_id} atualizada com sucesso"})
+        return jsonify({"message": f"Refeição {meal_id} atualizada com sucesso"})
         
-        return jsonify({"message":" Refeição não encontrada"}), 404
+    return jsonify({"message":" Refeição não encontrada"}), 404
         
 
 @app.route('/diet/<int:meal_id>', methods=['DELETE'])
 def delete_diet(meal_id):
-    meal = Diet.query.get(meal_id)
+    meal = db.session.get(Diet, meal_id)
     if meal:
         db.session.delete(meal)
         db.session.commit()
@@ -88,7 +91,5 @@ def delete_diet(meal_id):
 
     return jsonify({"message": "Refeição não encontrada"}), 404
 
-if __name__ == '__main__':
+if __name__=='__main__':
     app.run(debug=True)
-
-
